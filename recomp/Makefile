@@ -1,32 +1,24 @@
-# Static recompilation of Twin World (copied from ../../lemmings/recomp; the
-# runtime is generic RISC OS code, game.c holds what is Twin World's own)
+# Static recompilation of Twin World: the translated program (gen/, from
+# gen_c.py) and game.c, linked with libroger (the RISC OS runtime).
+ROGER   ?= $(HOME)/stuff/libroger
 CC      ?= gcc
 CFLAGS  ?= -O2 -g -w -fno-strict-aliasing $(if $(TRACE),-DRECOMP_TRACE)
 GEN     := $(wildcard gen/code*.c) gen/entries.c
-OBJ     := $(GEN:.c=.o) runtime.o game.o vdu.o display.o sound.o
+OBJ     := $(GEN:.c=.o) game.o
 LIBS    := $(shell pkg-config --libs sdl3) -lm -lpthread
-SDLCF   := $(shell pkg-config --cflags sdl3)
+INC     := -I$(ROGER)/include
 
-twinworld: $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LIBS)
+twinworld: $(OBJ) $(ROGER)/libroger.a
+	$(CC) $(CFLAGS) -o $@ $(OBJ) $(ROGER)/libroger.a $(LIBS)
 
-gen/%.o: gen/%.c runtime.h gen/gen.h
-	$(CC) $(CFLAGS) -I. -c -o $@ $<
+$(ROGER)/libroger.a: FORCE
+	$(MAKE) -C $(ROGER) libroger.a
 
-runtime.o: runtime.c runtime.h os.h game.h
-	$(CC) $(CFLAGS) -c -o $@ $<
+gen/%.o: gen/%.c $(ROGER)/include/roger_cpu.h gen/gen.h
+	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
 
-game.o: game.c game.h
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-vdu.o: vdu.c runtime.h os.h
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-sound.o: sound.c runtime.h os.h
-	$(CC) $(CFLAGS) $(SDLCF) -c -o $@ $<
-
-display.o: display.c os.h game.h shaders/crt.frag.spv.h
-	$(CC) $(CFLAGS) $(SDLCF) -c -o $@ $<
+game.o: game.c $(ROGER)/include/roger.h
+	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
 
 # Coverage build (~/stuff/superspider/phase0): "make cov" builds twinworld-cov
 # from separate *.cov.o objects; it writes $$RECOMP_COV (default cov.out).
@@ -35,11 +27,12 @@ COVOBJ  := $(OBJ:.o=.cov.o) cov.cov.o
 
 cov: twinworld-cov
 
-twinworld-cov: $(COVOBJ)
-	$(CC) $(CFLAGS) -o $@ $(COVOBJ) $(LIBS)
+twinworld-cov: $(COVOBJ) FORCE
+	$(MAKE) -C $(ROGER) cov COV=$(COVDIR)
+	$(CC) $(CFLAGS) -o $@ $(COVOBJ) $(ROGER)/libroger-cov.a $(LIBS)
 
-%.cov.o: %.c runtime.h os.h game.h $(COVDIR)/cov.h
-	$(CC) $(CFLAGS) $(SDLCF) -DRECOMP_COV -I. -I$(COVDIR) -c -o $@ $<
+%.cov.o: %.c $(ROGER)/include/roger_cpu.h $(COVDIR)/cov.h
+	$(CC) $(CFLAGS) -DRECOMP_COV $(INC) -I$(COVDIR) -c -o $@ $<
 
 cov.cov.o: $(COVDIR)/cov.c $(COVDIR)/cov.h
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -49,4 +42,6 @@ regen:
 	python3 gen_c.py
 
 clean:
-	rm -f gen/*.o runtime.o game.o vdu.o display.o sound.o twinworld twinworld-cov *.cov.o gen/*.cov.o
+	rm -f gen/*.o game.o twinworld twinworld-cov *.cov.o gen/*.cov.o
+
+.PHONY: FORCE cov regen clean

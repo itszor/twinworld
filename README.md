@@ -31,20 +31,18 @@ Return, Space, S, P, H, Escape and INKEY -45. Verified so far: Space then Return
 start a game from the title menu, X moves right. `--script` key numbers are
 the negated INKEY numbers (Return 74, Space 99, X 67).
 
-Layout of the runtime: generic vs game
---------------------------------------
+The runtime: libroger
+---------------------
 
-The runtime was copied from ../lemmings/recomp and is meant to become a
-separate library shared by the recompilation projects. Everything specific
-to Twin World is behind `game.h` / `game.c` (title, program image, app
-directory and its `<TwinWorld$Dir>` prefixes, start-up mode 9, WimpSlot
-656K, and hooks for init / per-frame / unknown SWIs / dispatch); the rest
-(runtime.c, runtime.h, display.c, sound.c, vdu.c, os.h) contains no Twin
-World knowledge. Lemmings-specific parts were removed (MusicModule2,
-LemBoot relocation, the &100 kernel IRQ slot).
+The runtime is libroger (~/stuff/libroger, or `make ROGER=dir`), the RISC
+OS runtime shared by the recompilations; recomp/game.c is all that is Twin
+World's own: the program and its translation, the app directory and its
+`<TwinWorld$Dir>` prefixes, mode 9, WimpSlot 656K and the known gap. (It
+started as a copy of the Lemmings runtime with the game-specific parts
+behind a game.h; that became libroger's struct roger_config.)
 
-What the generic part gained for Twin World, all of it general Archimedes
-hardware / RISC OS behaviour:
+What Twin World needed from the runtime, all general Archimedes hardware /
+RISC OS behaviour, now in libroger:
 
 - OS_GetEnv with the RAM limit (&8000 + WimpSlot), OS_Byte 135 (mode),
   file handles (OS_Find/GBPB/Args/BGet/BPut) with writes redirected to
@@ -52,43 +50,23 @@ hardware / RISC OS behaviour:
 - Device vectors (OS_ClaimDeviceVector): device 3 (vsync/flyback) and
   device 6 (IOC timer 1) are called each frame; the palette the timer
   handler leaves applies below the line where the timer fires.
-- MEMC video DMA registers (writes to &3600000+: Vinit/Vstart/Vend). The
-  game flips between two play-area buffers by rewriting Vinit/Vend in its
-  vsync handler, and the 40-line panel lives at physical &280, reached when
-  DMA wraps from Vend to Vstart (0). Screen memory is the OS's 80K ending at
-  &2000000, physical 0 = &1FEC000.
-- VIDC vertical timing (VCR/VDSR/VDER, regs 40/43/44). Twin World shows 204
-  lines (VDSR 64, VDER 268), centred in the standard 256-line window with
-  border above and below. The "vsync" interrupt is VIDC's flyback, raised at
-  the end of the display (VDER); the timer started there with latch &863B
-  (268.5 lines) fires at raster 224.5 = display line 160.5, between the
-  play area and the panel. With standard timings the same formula gives
-  Lemmings' former constant (56 lines).
-- The OS sound channel handler (SoundChannels): Sound_InstallVoice /
-  AttachVoice / Control / Pitch / Volume / Speaker / QInit, and a native
-  default Level 1 handler that calls each channel's voice generator
-  (GateOn / Fill / GateOff, R6 >= 0, R7 = channel - 1, R9 = SCCB, R10-R12
-  buffer) every DMA buffer. Twin World's single voice "TwinVoice" (&89A8)
-  plays the game's samples from its own per-channel table at &9590; the
-  four channels are gated on once at start-up (Sound_Control duration
-  &100, treated as "until released"). Sound_Pitch: &4000 = middle C, 4096
-  per octave, as a 256-sample wavetable step at the current sample period -
-  pitch &1000 (the effects' usual pitch) comes out at 8.36 kHz, the Amiga's
-  usual sample rate. Music and effects both play.
-
-Notes for the library split
----------------------------
-
-- Galactic Dan's runtime implements its voices natively (reading sample
-  start/length from the voice generators' GateOn code); the channel
-  handler here runs voice generators as translated code instead, so it
-  should replace that. Lemmings brings its own Level 1 handler (musmod2),
-  which keeps working (Sound_Configure's handler bypasses the channel
-  handler).
-- The display path is: OS banks / OS_Word 22 when the program uses the OS,
-  MEMC Vinit/Vstart/Vend once it writes MEMC itself, cropped by VIDC
-  VDSR/VDER either way.
-- Border colour (VIDC reg 16) is not modelled; border lines show colour 0.
+- MEMC video DMA registers (Vinit/Vstart/Vend). The game flips between two
+  play-area buffers by rewriting Vinit/Vend in its vsync handler, and the
+  40-line panel lives at physical &280, reached when DMA wraps from Vend to
+  Vstart (0). Screen memory is the OS's 80K ending at &2000000.
+- VIDC vertical timing (VCR/VDSR/VDER). Twin World shows 204 lines (VDSR
+  64, VDER 268), centred in the standard 256-line window. The "vsync"
+  interrupt is VIDC's flyback, raised at the end of the display (VDER); the
+  timer started there with latch &863B (268.5 lines) fires at raster 224.5
+  = display line 160.5, between the play area and the panel.
+- The OS sound channel handler: voice generators installed, attached,
+  instantiated and gated by Sound_Control, filling the DMA buffer. Twin
+  World's single voice "TwinVoice" (&89A8) plays the game's samples from
+  its own per-channel table at &9590; the four channels are gated on once
+  at start-up (duration &100, taken as "until released"). Sound_Pitch:
+  &4000 = middle C, 4096 per octave, as a 256-sample wavetable step at 48us
+  - pitch &1000 (the effects' usual pitch) comes out at 8.36 kHz, the
+  Amiga's usual sample rate.
 
 Known gaps
 ----------
