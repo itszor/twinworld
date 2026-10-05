@@ -1,0 +1,21 @@
+# Python / editors
+__pycache__/
+*.pyc
+*.swp
+
+# Analysis outputs (analysis/run.sh, or make regen in recomp/)
+analysis/ss.json
+analysis/twinworld.json
+analysis/twinworld.json.pickle
+analysis/out/
+
+# Recompilation: generated C, objects, binaries, run outputs
+recomp/gen/
+recomp/*.o
+recomp/twinworld
+recomp/twinworld-cov
+recomp/recomp.*
+recomp/*.log
+recomp/screenshot-*.bmp
+recomp/*.wav
+recomp/savedata/
