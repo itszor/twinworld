@@ -41,7 +41,16 @@ regen:
 	cd ../analysis && ./run.sh
 	python3 gen_c.py
 
+# "make roots" merges the gap entries a --trace-gaps run logged
+# (untranslated.log, or LOG=...) into ../analysis/twinworld.roots, so the next
+# "make regen" translates them.
+SS  ?= $(HOME)/stuff/superspider
+LOG ?= untranslated.log
+
+roots:
+	python3 $(SS)/tools/gap_roots.py '../extracted/!TwinWorld/!RunImage,fffff842-00000000' 8000 ../analysis/twinworld.roots $(LOG)
+
 clean:
 	rm -f gen/*.o game.o twinworld twinworld-cov *.cov.o gen/*.cov.o
 
-.PHONY: FORCE cov regen clean
+.PHONY: FORCE cov regen roots clean
