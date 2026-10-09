@@ -1,5 +1,5 @@
 # Static recompilation of Twin World: the translated program (gen/, from
-# gen_c.py) and game.c, linked with libroger (the RISC OS runtime).
+# superspider gen) and game.c, linked with libroger (the RISC OS runtime).
 ROGER   ?= $(HOME)/stuff/libroger
 CC      ?= gcc
 CFLAGS  ?= -O2 -g -w -fno-strict-aliasing $(if $(TRACE),-DRECOMP_TRACE)
@@ -38,8 +38,9 @@ cov.cov.o: $(COVDIR)/cov.c $(COVDIR)/cov.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 regen:
-	cd ../analysis && ./run.sh
-	python3 gen_c.py
+	cd ../analysis && SUPERSPIDER=$(SS) ./run.sh
+	$(SS)/_build/default/bin/main.exe gen '../extracted/!TwinWorld/!RunImage,fffff842-00000000' 8000 \
+	    ../analysis/twinworld.json --c gen
 
 # "make roots" merges the gap entries a --trace-gaps run logged
 # (untranslated.log, or LOG=...) into ../analysis/twinworld.roots, so the next

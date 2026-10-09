@@ -4,15 +4,16 @@ Twin World (Ubi Soft, 1990/91) - static recompilation
 Archimedes conversion of the Amiga/ST game (program by James Byrne, Cygnus
 Software Engineering). Disc image: `Twinworld (1991)(ubisoft).adf`.
 
-    tools/extract.py               unpack the ADF -> extracted/ (!TwinWorld, !TwinInfo)
-    analysis/run.sh                code/data separation with SuperSpider (~/stuff/superspider):
-                                   ss.json -> twinworld.json(.pickle), out/functions.tsv
-    recomp/                        make regen (analysis + gen_c.py), make, ./twinworld
+    $SS/tools/adf_extract.py       unpack the ADF -> extracted/ (!TwinWorld, !TwinInfo)
+                                   ($SS = ~/stuff/superspider)
+    analysis/run.sh                code/data separation with SuperSpider (superspider analyse
+                                   --full) -> twinworld.json
+    recomp/                        make regen (analysis + superspider gen), make, ./twinworld
                                    make cov: coverage build (SuperSpider phase 0 recorder)
 
 Unlike Lemmings and Galactic Dan there are no Ghidra projects, hand seeds or
 dynamic facts: SuperSpider's analysis alone (5458 code words, 153
-functions) drives gen_c.py. The only code the runtime has to interpret
+functions) drives the C translation. The only code the runtime has to interpret
 is &9450-&945C (below).
 
 Running
