@@ -2,10 +2,19 @@ Twin World (Ubi Soft, 1990/91) - static recompilation
 =====================================================
 
 Archimedes conversion of the Amiga/ST game (program by James Byrne, Cygnus
-Software Engineering). Disc image: `Twinworld (1991)(ubisoft).adf`.
+Software Engineering).
 
-    $SS/tools/adf_extract.py       unpack the ADF -> extracted/ (!TwinWorld, !TwinInfo)
-                                   ($SS = ~/stuff/superspider)
+A recipe: this repository holds no game data. It rebuilds the game from
+your own copy, recognised by content (recipe.json):
+
+    ./build.sh "Twinworld (1991)(ubisoft).zip"      (the TOSEC zip, or the .adf in it)
+    cd recomp && ./twinworld
+
+build.sh runs recipe.json's steps with SuperSpider's tools/weave.py
+(~/stuff/superspider, or $SUPERSPIDER; $SS below): it extracts the disc to
+extracted/disc and !TwinWorld from it to game/ (libroger's appdir), then
+analyses, translates and links. Needs python3, OCaml/dune, gcc and SDL3.
+
     analysis/run.sh                code/data separation with SuperSpider (superspider analyse
                                    --full) -> twinworld.json
     recomp/                        make regen (analysis + superspider gen), make, ./twinworld

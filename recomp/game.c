@@ -12,9 +12,9 @@ static const uint32_t interpreted[] = {0x9450, 0x9460, 0, 0};
 
 static const struct roger_config config = {
     .title = "Twin World (recompiled)",
-    .image_path = "../extracted/!TwinWorld/!RunImage,fffff842-00000000",
+    .image_path = "../game/!TwinWorld/!RunImage,fffff842-00000000",
     .image = &recomp_image,
-    .appdir = "../extracted/!TwinWorld",
+    .appdir = "../game/!TwinWorld",
     .dir_prefixes = prefixes,
     /* !Run: Echo <22><9>... (MODE 9) and WimpSlot 656K. The program checks
      * both: OS_Byte 135 must report mode 9 ("Bad mode") and the RAM limit

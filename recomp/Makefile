@@ -39,7 +39,7 @@ cov.cov.o: $(COVDIR)/cov.c $(COVDIR)/cov.h
 
 regen:
 	cd ../analysis && SUPERSPIDER=$(SS) ./run.sh
-	$(SS)/_build/default/bin/main.exe gen '../extracted/!TwinWorld/!RunImage,fffff842-00000000' 8000 \
+	$(SS)/_build/default/bin/main.exe gen '../game/!TwinWorld/!RunImage,fffff842-00000000' 8000 \
 	    ../analysis/twinworld.json --c gen
 
 # "make roots" merges the gap entries a --trace-gaps run logged
@@ -49,7 +49,7 @@ SS  ?= $(HOME)/stuff/superspider
 LOG ?= untranslated.log
 
 roots:
-	python3 $(SS)/tools/gap_roots.py '../extracted/!TwinWorld/!RunImage,fffff842-00000000' 8000 ../analysis/twinworld.roots $(LOG)
+	python3 $(SS)/tools/gap_roots.py '../game/!TwinWorld/!RunImage,fffff842-00000000' 8000 ../analysis/twinworld.roots $(LOG)
 
 clean:
 	rm -f gen/*.o game.o twinworld twinworld-cov *.cov.o gen/*.cov.o
