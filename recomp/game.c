@@ -12,6 +12,9 @@ static const uint32_t interpreted[] = {0x9450, 0x9460, 0, 0};
 
 static const struct roger_config config = {
     .title = "Twin World (recompiled)",
+    /* a controller: Z X ' / (the game's directions), A Return, B and start
+     * Space */
+    .pad_map = "left=Z,right=X,up=',down=/,a=Return,b=Space,start=Space",
     .image_path = "../game/!TwinWorld/!RunImage,fffff842-00000000",
     .image = &recomp_image,
     .appdir = "../game/!TwinWorld",
