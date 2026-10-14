@@ -15,7 +15,7 @@ static const struct roger_config config = {
     /* a controller: Z X ' / (the game's directions), A Return, B and start
      * Space */
     .pad_map = "left=Z,right=X,up=',down=/,a=Return,b=Space,start=Space",
-    .image_path = "../game/!TwinWorld/!RunImage,fffff842-00000000",
+    .image_path = "../game/!TwinWorld/!RunImage,fffff842-c4d19dd4",
     .image = &recomp_image,
     .appdir = "../game/!TwinWorld",
     .dir_prefixes = prefixes,
